@@ -6,9 +6,8 @@ $(document).ready(function(){
 
 	$("._WIKI_hyperlink").click(function(e){
 		e.preventDefault();
+
 	})
-
-
 
 })
 
@@ -26,7 +25,6 @@ function _WIKI_load(doc){
 			//_ANCHOR3D_route("#" + pages[0].hyperlink)
 
 			//createPage(pages.find(e => e.hyperlink === _ANCHOR3D_page()));	
-		//EVERYTHING you hear of my Father is of COINTELPRO	
 		//i've heard it through disciplic succession that those who forsake the family tradition dwell always in Hell
 		
 		//else{
@@ -48,6 +46,8 @@ $(document).on("_ANCHOR3D_load", function () {
 	if(pages){
 		let found = pages.find(e => e.hyperlink === _ANCHOR3D_page());
 		
+		console.log(found.hyperlink);
+
     	createPage(found)
     	//sketchy workaround because the page that holds ANCHOR3D data comes back after the load. 
     	//this is for refresh-->back button 
@@ -63,31 +63,19 @@ $(document).on("_ANCHOR3D_load", function () {
 //clientside edit of jsonblob
 
 
-function getSuffix(str){
-	return str.substring(str.indexOf('_') + 1);
-}
-
 //TODO: write something like TaffyDB that queries nested arrays
 
 //partition : heading, subheading, or content
 //id : index of subheading or content
 function updateJSONBlob(partition, id){
-	//did i win
 	console.log(partition, id);
 
 	var heading = currentPage.heading;
 
-	//currentPage holds all our data
-	//then it's id, partition of currentPage
-	//do not struggle with me
-
-	//WHY DIDN'T YOU USE A SWITCH
-	//this is how you program
 	if(partition === "heading"){
-		//dealing with heading
 		currentPage.heading = $("#edit_heading_input").val();
-		//you have seething glowniggers (HEREBY!!!)
-		//The Star
+		currentPage.hyperlink = linkify($("#edit_heading_input").val()).replace(/ /g,"_").toLowerCase();
+		_ANCHOR3D_hyperlink("#" + currentPage.hyperlink);
 		console.log(currentPage.heading);
 	}
 	else if(partition === "subheading"){
@@ -95,13 +83,9 @@ function updateJSONBlob(partition, id){
 		currentPage.contents[id].subheading = $("#edit_subheading_input_" + id).val()		
 	}
 	else if(partition === "content"){
-		//we did it reddit!!!1
 		currentPage.contents[id].content =  $("#edit_content_input_" + id).val()
 	}
 
-	//glownigger butthurt that i don't want to use glowniggerDB
-	//you can't query nested elements in TaffyDB, i read about TaffyDB in a book
-	//i thought i'd try it yet i wondered if TaffyDB was jewish...ends up it is
 	var index = pages.map(function(e) { return e.heading; }).indexOf(heading);
 	pages[index] = currentPage;
 
@@ -111,6 +95,21 @@ function updateJSONBlob(partition, id){
 	//TODO: refactor with addChapter
 	lance()
 }
+
+function linkify(inputText) {
+    var replacedText, replacePattern1, replacePattern2, replacePattern3;
+
+    //URLs starting with http://, https://, or ftp://
+    replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+    replacedText = inputText.replace(replacePattern1, '<a href="$1" target="_blank">$1</a>');
+
+    //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+    replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+    replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+    return replacedText;
+}
+
 
 function lance(){
 	$.ajax({
@@ -124,12 +123,53 @@ function lance(){
 	})
 }
 
+//om mane padme hum
+function mintPage(){
+	//just give someone a blank template
+	//hyperlink
+	//THx
+
+	var hash = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+	
+	_ANCHOR3D_hyperlink("#" + hash);
+
+	var page = {
+		"heading": "Hello World!",
+		"hyperlink": hash,
+		"contents": [
+		    {
+		        "subheading": "Subheading",
+		    "content": "Lorem ipsum hocus pocus stupendo!"
+		    }
+		],
+		"references" : [
+
+		]
+	}
+
+
+
+			
+
+	createPage(page)
+	
+
+	pages.push(page);
+
+	lance();
+
+	
+
+
+}
+
 //title, content
 
 //i need to go to CONCENTRATION_CAMP
-function addChapter(title, content){
+function addChapter(title, index, content){
 	var heading = currentPage.heading;
-	currentPage.contents.push({
+	var i = index ? parseInt(index) : currentPage.contents.length;
+	currentPage.contents.splice(i, 0, {
 		subheading : title,
 		content: content
 	})
@@ -150,14 +190,139 @@ function deleteChapter(id){
 	lance();
 }
 
+function deletePage(){
+	var heading = currentPage.heading;
+
+	var index = pages.map(function(e){return e.heading; }).indexOf(heading)
+
+	pages.splice(index, 1);
+
+	lance();
+}
+
+function deleteReference(i){
+	var heading = currentPage.heading;
+
+	console.log(i);
+
+	//wat
+	currentPage.references.splice(i, 1);
+	console.log(currentPage.references);
+	var index = pages.map(function(e){return e.heading; }).indexOf(heading)
+	pages[index] = currentPage;
+	lance(); 
+}
+
+function updateIMG(hyperlink){
+
+	var heading = currentPage.heading;
+	currentPage.img = {} 
+	currentPage.img.hyperlink = hyperlink;
+
+	var index = pages.map(function(e){return e.heading; }).indexOf(heading)
+	pages[index] = currentPage;
+	console.log(hyperlink);
+	//this is technically logic the Father taught me
+	lance();
+}
+
+function addReference(text, hyperlink){
+	//search the content for this text, add []
+	/* Dr34D */
+	//add the reference as a data entry
+	var heading = currentPage.heading;
+	
+	var index = pages.map(function(e){return e.heading; }).indexOf(heading)
+	currentPage.references = currentPage.references ? currentPage.references : []
+
+	currentPage.references.push({
+		text : text,
+		hyperlink : hyperlink
+	}) 
+
+	pages[index] = currentPage;
+
+	lance();
+}
+
 var currentPage;
 
 function createPage(page){
 	currentPage = page;
 	$(".wiki").empty();
 
+	//wiki is the container
+	var main = document.createElement("div");
+	$(main).addClass("main");
+
+	//sidebar
+	var sidebar = document.createElement("div");
+	$(".wiki").append(main);
+	$(".wiki").append(sidebar);
+	var button = document.createElement("button");
+	$(sidebar).append(button);
+	$(button).text("Mint Page");
+	$(sidebar).append("<br>");
+	$(button).click(function(e){
+		e.preventDefault();
+		//pig american
+		mintPage();
+	})
+
+
+	/* SRC img */
+	var img = document.createElement("img");
+	$(img).attr("id", "src_img");
+	$(sidebar).append(img);
+	//for now
+	if(page.img)
+	$(img).attr("src", page.img.hyperlink);
+	var imgEdit = document.createElement("a")
+	
+	//weird quirk of HTML is an href needs a # to be clickable
+	$(imgEdit).attr("href", "#");
+	$(imgEdit).text("hyperlink");
+	$(imgEdit).click(function(e){
+		//another weird quirk
+		e.preventDefault();
+		$(imgEditInput).fadeToggle(777);
+		$(imgEditInputButton).fadeToggle(777);
+	})
+
+	var imgEditInput = document.createElement("input");
+	$(imgEditInput).hide();
+	$(sidebar).append(imgEditInput);
+	var imgEditInputButton = document.createElement("button");
+	$(sidebar).append(imgEditInputButton);
+
+	//exclamation point for image magick
+	$(imgEditInputButton).text("Update!")
+	$(imgEditInputButton).hide();
+	//feross teaches this method of DOM-creation in WebTorrent docs
+	$(imgEditInputButton).click(function(e){
+		//for redundancy (i invented that i truly did!)
+		e.preventDefault();
+		updateIMG($(imgEditInput).val());
+	})
+
+	$(sidebar).append(imgEdit);
+
+	$(sidebar).addClass("sidebar");
+	//[]D[][]\/[][]D
+	//i don't know what i did
+	var button = document.createElement("button");
+	$(sidebar).append(button);
+	$(button).click(function(e){
+		e.preventDefault();
+		//pig american
+		deletePage();
+	})
+	$(button).attr("id", "delete_page_button");
+	$(button).text("DELETE Page");
+
+
 	var div = document.createElement("div");
-	var partial = $(".wiki").append(div)
+	var partial = $(main).append(div)
 	$(partial).addClass("partial");
 	$(partial).addClass(page.hyperlink);
 
@@ -193,15 +358,42 @@ function createPage(page){
 	$(heading_button).hide();
 	$(partial).append(heading_button);
 
-	var table = document.createElement("table");
-	$(partial).append(table);
 
+	//----TABLE OF CHAPTERS-----
+	var span = document.createElement("span");
+	$(span).text("Table of Chapters");
+	$(span).attr("id", "table_of_chapters");
+	$(partial).append("<br><br>")
+	$(partial).append(span);
+	var ol = document.createElement("ol");
+	$(partial).append(ol);
+	$(ol).attr('start', 0)
+	$(partial).append("<br>")
 	//AM I NOT MERCIFUL
 	//foreach to create index
 	page.contents.forEach(function(content, i){
+		//add to ul this is the Table of Chapters
+
+		//--TABLE OF CHAPTERS, cont.--
+		var li = document.createElement("li");
+		$(ol).append(li);
+		var a = document.createElement("a");
+
+		$(li).append(a);
+		$(a).text(content.subheading);
+		$(a).attr("href" , "#");
+		$(a).click(function(e){
+			e.preventDefault();
+			$([document.documentElement, document.body]).animate({
+        		scrollTop: $("#" + content.subheading.replace(/\W/g,'_')).offset().top
+    		}, 777);
+		})
+
 		var h2 = document.createElement("h2");
+
 		$(partial).append(h2);
 		$(h2).text(content.subheading);
+		$(h2).attr("id", content.subheading.replace(/\W/g,'_'));
 		var a1 = document.createElement("a");
 		$(partial).append(a1);
 		$(a1).text("[edit]");
@@ -259,10 +451,10 @@ function createPage(page){
 		//let me add the buttons first
 		$(content_edit).attr("id", "edit_content_input_" + i);
 		$(partial).append(content_edit);
-		$(content_edit).height("556px");
-		$(content_edit).width("777px");
+		$(content_edit).height("444px");
+		$(content_edit).width("555px");
 		$(content_edit).hide();
-		//we invented Legato Jasmine and I
+		//we invented Legato Jasmine and me OH THAT'S WHAT THAT IS
 
 		$(a2).click(function(e){
 			e.preventDefault();
@@ -271,14 +463,17 @@ function createPage(page){
 			$(content_button).fadeToggle(747);
 		})
 		var span = document.createElement("span")
-		$(div).append(span)
+		$(div).append(span) //USSS slave
 		$(span).append(content.content);	
+		$(span).attr("id", "content_span_" + i);
 		$(content_edit).val($(span).html())
 		$(div).append(a2);
 		var content_button = document.createElement("button");
 		$(content_button).addClass("edit_button");
 		$(content_button).attr("id", "edit_content_button_" + i);
-		$(div).append(content_button);
+		$(partial).append("<br>")
+		$(partial).append(content_button);
+		$(partial).append("<br>")
 		$(content_button).text("Update");
 		$(content_button).hide();
 
@@ -313,23 +508,30 @@ function createPage(page){
 	//add Chapter
 	var content_button = document.createElement("button");
 	$(content_button).text("Add Chapter");
-	$(partial).append("<br><br>")
+	$(partial).append("<br>")
 	$(partial).append(content_button);
+	$(partial).append("<br>")
 	var content_title = document.createElement("input")
 	var content_input = document.createElement("textarea")
 	$(partial).append(content_title);
+	var content_index = document.createElement("input");
+	$(partial).append(content_index);
+	$(content_index).attr("id", "content_index")
+	$(content_index).attr("placeholder", "index: 0-n")
 	$(partial).append("<br>")
 	$(partial).append(content_input);
 	$(content_title).hide();
+	$(content_index).hide();
 	$(content_input).hide();
 	$(content_title).attr("placeholder", "Title")
 	$(content_input).attr("placeholder", "Content")
-	$(content_input).width("556px");
-	$(content_input).height("777px");
+	$(content_input).width("555px");
+	$(content_input).height("444px");
 	$(content_button).click(function(e){
 		e.preventDefault();
 		$(content_title).fadeToggle(757);
 		$(content_input).fadeToggle(757);
+		$(content_index).fadeToggle(757);
 		$(section_update_button).fadeToggle(757)
 	})
 
@@ -341,20 +543,42 @@ function createPage(page){
 	$(section_update_button).hide();
 	$(section_update_button).click(function(e){
 		e.preventDefault();
-		addChapter($(content_title).val(), $(content_input).val());
+		addChapter($(content_title).val(), $(content_index).val(), $(content_input).val());
 	})
 
 	
 	//references
-
+	$(partial).append("<br>");
 	var divref = document.createElement("div");
+	$(divref).attr("id", "references")
 	$(partial).append(divref);
 	var h3ref = document.createElement("h3");
-	$(partial).append(h3ref);
+	$(divref).append(h3ref);
+	$(divref).append("<br>")
 	$(h3ref).text("References")
 	var spanref = document.createElement("spanref")
 	$(divref).append(spanref); 
+	var referenceTextInput = document.createElement("input");
+	var referenceHyperlinkInput = document.createElement("input");
+	$(divref).append(referenceTextInput);
+	$(divref).append(referenceHyperlinkInput);
+	var referenceAddButton = document.createElement("button");
+	//i have made first contact
+	$(referenceTextInput).width("333px").attr("placeholder", "Text to match")
+	$(referenceHyperlinkInput).width("125px").attr("placeholder", "hyperlink");
+	$(divref).append(referenceAddButton);
+	$(referenceAddButton).text("+")
+	$(referenceAddButton).click(function(e){
+		e.preventDefault();
 
+		//Technically this could link to a torrent on SolomonsHouse..
+		//TODO modular architecture
+		addReference($(referenceTextInput).val(), $(referenceHyperlinkInput).val());
+	})
+
+
+
+	manifestReference(page);
 	manifestHyperlink();
 }
 
@@ -370,7 +594,7 @@ function manifestHyperlink(){
 		$(this).attr("href", "#" + hyperlink);
 		$(this).click(function(e){
 			e.preventDefault();
-
+			console.log("IT HAS BEEN CLICKED")
 			//get it to DISPLAY
 			_ANCHOR3D_route($(this).attr("href"));
 			//substring(1) because there is a # on the hyperlink
@@ -378,6 +602,58 @@ function manifestHyperlink(){
 
 	})
 }
+
+function manifestReference(page){
+
+	$("#references").append("<br>")
+	var ol = document.createElement("ol")
+	
+	//we're not gonna use im
+	if(page.references){
+		page.references.forEach(function(ref, i){
+			//does he have to pwn so h4rd
+		//REST PHIL
+			
+			$("#references").append(ol);
+			var li = document.createElement("li");
+			$(ol).append(li);		
+			var a = document.createElement("a");
+			$(li).append(a);
+			$(a).attr("id", "reference_li_" + i);
+			$(a).attr("href", ref.hyperlink);
+			$(a).text(ref.hyperlink);
+			$(ol).attr("start", 0);
+			var button = document.createElement("button");
+			$(button).text("DELETE");
+			$(li).append(button);
+
+			$(button).click(function(){
+				deleteReference(i)
+			})
+
+		    for (var j=0; j<page.contents.length; j++) {
+		    	//get char length of ref.text
+		    	//j is the content index
+		    	console.log(ref);
+		    	$("#content_span_" + j).html($("#content_span_" + j).html().replace(ref.text, ref.text + "<a class='reference' id='reference_a_" + i + "' href='#'>[" + i +"]</a>"));
+		    	$(".contentDiv").on("click", "#reference_a_" + i, function(e){
+		    		e.preventDefault();
+		    		//doesn't work correctly...it should scroll to #reference_li_i
+ 		    		$("html, body").animate({ scrollTop: $("#reference_a_" + i).position().top }, 1);
+		    		return false;    				
+		    	})
+
+
+					
+			}
+			//
+	 		//KEK
+		//((SCH1ZO))
+		})
+	}
+	
+}
+
 
 function parseJSON(doc, cb){
 	console.log(doc);
