@@ -4,7 +4,7 @@ $(document).ready(function(){
 
 	//set attributes to hyperlinks
 
-	$("._WIKI_hyperlink").click(function(e){
+	$("_WIKI_hyperlink").click(function(e){
 		e.preventDefault();
 
 	})
@@ -18,7 +18,7 @@ function _WIKI_load(doc){
 	//the result gets handed back in a callback function, THEN we store the
 	//item in the db and route the page
 	parseJSON(doc, function(err, result){
-		console.log("RESULT : " + result);
+		console.log(result);
 		pages = result;
 
 		//if(pages){
@@ -45,13 +45,16 @@ $(document).on("_ANCHOR3D_load", function () {
 	console.log("LOADED")
 	if(pages){
 		let found = pages.find(e => e.hyperlink === _ANCHOR3D_page());
-		
-		console.log(found.hyperlink);
+		if(found){
+			//first error not caused by USSS
+			console.log(found.hyperlink);
 
-    	createPage(found)
-    	//sketchy workaround because the page that holds ANCHOR3D data comes back after the load. 
-    	//this is for refresh-->back button 
-    	showDiv(found.hyperlink);
+	    	createPage(found)
+	    	//sketchy workaround because the page that holds ANCHOR3D data comes back after the load. 
+	    	//this is for refresh-->back button 
+	    	showDiv(found.hyperlink);		
+		}
+
 	}
 });
 
@@ -245,6 +248,17 @@ function addReference(text, hyperlink){
 	lance();
 }
 
+function search(text){
+
+	var p4ge = pages.find(e => e.heading === text);
+	if(p4ge){
+		_ANCHOR3D_route("#" + p4ge.hyperlink);
+	}
+	else{
+		alert("No Results");
+	}
+}
+
 var currentPage;
 
 function createPage(page){
@@ -261,8 +275,36 @@ function createPage(page){
 	$(".wiki").append(sidebar);
 	var button = document.createElement("button");
 	$(sidebar).append(button);
+
 	$(button).text("Mint Page");
-	$(sidebar).append("<br>");
+	$(sidebar).append("<br>")
+	var searchBar = document.createElement("input");
+	$(searchBar).attr("id", "search_input")
+	$(sidebar).append(searchBar);
+	$(searchBar).attr("placeholder", "Search")
+	var searchButton = document.createElement("button");
+	$(sidebar).append(searchButton);
+	$(searchButton).text("Search")
+	$(sidebar).append("<br><br>")
+
+	$(searchButton).click(function(e){
+		e.preventDefault();
+		search($(searchBar).val());
+	})
+
+
+	//[]D[][]\/[][]D
+	//i don't know what i did
+	/*var deleteButton = document.createElement("button");
+	$(sidebar).append(deleteButton);
+	$(button).click(function(e){
+		e.preventDefault();
+		//pig american
+		deletePage();
+	})
+	$(deleteButton).attr("id", "delete_page_button");
+	$(deleteButton).text("DELETE Page");*/
+	//$(sidebar).append("<br>");
 	$(button).click(function(e){
 		e.preventDefault();
 		//pig american
@@ -281,6 +323,7 @@ function createPage(page){
 	
 	//weird quirk of HTML is an href needs a # to be clickable
 	$(imgEdit).attr("href", "#");
+	$(imgEdit).attr("id", "img_hyperlink_edit")
 	$(imgEdit).text("hyperlink");
 	$(imgEdit).click(function(e){
 		//another weird quirk
@@ -291,6 +334,8 @@ function createPage(page){
 
 	var imgEditInput = document.createElement("input");
 	$(imgEditInput).hide();
+	$(imgEditInput).attr("id", "edit_img_input")
+	$(imgEditInput).attr("placeholder", "IMG hyperlink")
 	$(sidebar).append(imgEditInput);
 	var imgEditInputButton = document.createElement("button");
 	$(sidebar).append(imgEditInputButton);
@@ -308,17 +353,7 @@ function createPage(page){
 	$(sidebar).append(imgEdit);
 
 	$(sidebar).addClass("sidebar");
-	//[]D[][]\/[][]D
-	//i don't know what i did
-	var button = document.createElement("button");
-	$(sidebar).append(button);
-	$(button).click(function(e){
-		e.preventDefault();
-		//pig american
-		deletePage();
-	})
-	$(button).attr("id", "delete_page_button");
-	$(button).text("DELETE Page");
+
 
 
 	var div = document.createElement("div");
@@ -584,21 +619,28 @@ function createPage(page){
 
 
 function manifestHyperlink(){
-	$("._WIKI_hyperlink").each(function(){
+	$("hyperlink").each(function(){
+		console.log("hyper");
 		//DENDRIT1C
-		let hyperlink = pages.find(e => e.heading === $(this).text()).hyperlink;
-		console.log(hyperlink);
-		console.log($(this).text());
-		console.log(hyperlink);
-		$(this).addClass(hyperlink);
-		$(this).attr("href", "#" + hyperlink);
-		$(this).click(function(e){
-			e.preventDefault();
-			console.log("IT HAS BEEN CLICKED")
-			//get it to DISPLAY
-			_ANCHOR3D_route($(this).attr("href"));
-			//substring(1) because there is a # on the hyperlink
-		})
+		var p4ge = pages.find(e => e.heading === $(this).text());
+		if(p4ge){			
+			var hyperlink = p4ge.hyperlink;
+
+			var a = document.createElement("a");
+			$(this).after(a);
+			$(a).text($(this).text())
+			$(this).remove();
+			$(a).addClass(hyperlink);
+			$(a).addClass("_WIKI_hyperlink")
+			$(a).attr("href", "#" + hyperlink);
+			$(a).click(function(e){
+				e.preventDefault();
+				console.log("IT HAS BEEN CLICKED")
+				//get it to DISPLAY
+				_ANCHOR3D_route($(this).attr("href"));
+				//substring(1) because there is a # on the hyperlink
+			})
+		}
 
 	})
 }
