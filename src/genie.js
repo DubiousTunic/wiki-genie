@@ -1,3 +1,5 @@
+//TODO: hyperlink case-insensitive
+
 $(document).ready(function(){
 
 	$("._WIKI_heading").text(_ANCHOR3D_page());
@@ -75,28 +77,42 @@ function updateJSONBlob(partition, id){
 
 	var heading = currentPage.heading;
 
+	var deleting = false;
+	var currentPageHeading;
+
 	if(partition === "heading"){
-		currentPage.heading = $("#edit_heading_input").val();
-		currentPage.hyperlink = linkify($("#edit_heading_input").val()).replace(/ /g,"_").toLowerCase();
-		_ANCHOR3D_hyperlink("#" + currentPage.hyperlink);
-		console.log(currentPage.heading);
+		if($("#edit_heading_input").val() === ""){
+			deleting = true;
+		}
+		else{
+			currentPagHeading = $("#edit_heading_input").val();
+			currentPage.heading = currentPageHeading;
+			currentPage.hyperlink = linkify($("#edit_heading_input").val()).replace(/ /g,"_").toLowerCase();
+			_ANCHOR3D_hyperlink("#" + currentPage.hyperlink);
+			console.log(currentPage.heading);
+		}
 	}
 	else if(partition === "subheading"){
 		//i herd you liek mudkips
-		currentPage.contents[id].subheading = $("#edit_subheading_input_" + id).val()		
+		currentPage.contents[id].subheading = $("#edit_subheading_input_" + id).val()	
+		currentPage.contents[id].content =  $("#edit_content_input_" + id).val()	
+
 	}
-	else if(partition === "content"){
-		currentPage.contents[id].content =  $("#edit_content_input_" + id).val()
+
+	if(!deleting){	
+		var index = pages.map(function(e) { return e.heading; }).indexOf(heading);
+		pages[index] = currentPage;
+
+		console.log(pages);
+
+		//TODO: streamline reference
+		//TODO: refactor with addChapter
+		lance()	
+	}
+	else{
+		deletePage()
 	}
 
-	var index = pages.map(function(e) { return e.heading; }).indexOf(heading);
-	pages[index] = currentPage;
-
-	console.log(pages);
-
-	//TODO: streamline reference
-	//TODO: refactor with addChapter
-	lance()
 }
 
 function linkify(inputText) {
@@ -127,7 +143,7 @@ function lance(){
 }
 
 //om mane padme hum
-function mintPage(){
+function mintPage(txt){
 	//just give someone a blank template
 	//hyperlink
 	//THx
@@ -137,7 +153,7 @@ function mintPage(){
 	_ANCHOR3D_hyperlink("#" + hash);
 
 	var page = {
-		"heading": "Hello World!",
+		"heading": txt,
 		"hyperlink": hash,
 		"contents": [
 		    {
@@ -148,21 +164,13 @@ function mintPage(){
 		"references" : [
 
 		]
-	}
-
-
-
-			
+	}			
 
 	createPage(page)
 	
-
 	pages.push(page);
 
 	lance();
-
-	
-
 
 }
 
@@ -199,8 +207,8 @@ function deletePage(){
 	var index = pages.map(function(e){return e.heading; }).indexOf(heading)
 
 	pages.splice(index, 1);
-
 	lance();
+	_ANCHOR3D_route("#" + pages[0].hyperlink);
 }
 
 function deleteReference(i){
@@ -250,12 +258,14 @@ function addReference(text, hyperlink){
 
 function search(text){
 
-	var p4ge = pages.find(e => e.heading === text);
+	
+
+	var p4ge = pages.find(e => e.heading.toLowerCase() === text.toLowerCase());
 	if(p4ge){
 		_ANCHOR3D_route("#" + p4ge.hyperlink);
 	}
 	else{
-		alert("No Results");
+		mintPage(text.toLowerCase());
 	}
 }
 
@@ -273,15 +283,10 @@ function createPage(page){
 	var sidebar = document.createElement("div");
 	$(".wiki").append(main);
 	$(".wiki").append(sidebar);
-	var button = document.createElement("button");
-	$(sidebar).append(button);
-
-	$(button).text("Mint Page");
-	$(sidebar).append("<br>")
 	var searchBar = document.createElement("input");
 	$(searchBar).attr("id", "search_input")
 	$(sidebar).append(searchBar);
-	$(searchBar).attr("placeholder", "Search")
+	$(searchBar).attr("placeholder", "Page heading")
 	var searchButton = document.createElement("button");
 	$(sidebar).append(searchButton);
 	$(searchButton).text("Search")
@@ -305,11 +310,11 @@ function createPage(page){
 	$(deleteButton).attr("id", "delete_page_button");
 	$(deleteButton).text("DELETE Page");*/
 	//$(sidebar).append("<br>");
-	$(button).click(function(e){
+	/*$(button).click(function(e){
 		e.preventDefault();
 		//pig american
 		mintPage();
-	})
+	})*/
 
 
 	/* SRC img */
@@ -400,9 +405,14 @@ function createPage(page){
 	$(span).attr("id", "table_of_chapters");
 	$(partial).append("<br><br>")
 	$(partial).append(span);
+	$(partial).append("<br>")
+	var content_button = document.createElement("button");
+	$(content_button).text("Mint Chapter");
+	$(partial).append(content_button);
 	var ol = document.createElement("ol");
 	$(partial).append(ol);
 	$(ol).attr('start', 0)
+	//add Chapter
 	$(partial).append("<br>")
 	//AM I NOT MERCIFUL
 	//foreach to create index
@@ -444,6 +454,7 @@ function createPage(page){
 		var subheading_edit = document.createElement("input");
 		$(subheading_edit).attr("id", "edit_subheading_input_" + i);
 		$(partial).append(subheading_edit); 
+		$(subheading_edit).val("Subheading");
 		$(subheading_edit).val($(h2).text());
 		$(subheading_edit).hide();
 
@@ -456,6 +467,8 @@ function createPage(page){
 			//these numbers are actually crucially important because all pRNG is time-Based
 			$(subheading_edit).fadeToggle(747);
 			$(subheading_button).fadeToggle(747);
+			$(content_edit).fadeToggle(747);
+			$(content_button).fadeToggle(747);
 			$(content_delete_button).fadeToggle(747);
 		})
 		$(subheading_button).text("Update");
@@ -463,7 +476,7 @@ function createPage(page){
 
 		//delete button
 		var content_delete_button = document.createElement("button");
-		$(content_delete_button).text("Delete");
+		$(content_delete_button).text("Full Delete");
 		$(partial).append(content_delete_button);
 		$(content_delete_button).hide();
 		$(content_delete_button).click(function(e){
@@ -476,40 +489,39 @@ function createPage(page){
 		$(partial).append(div);
 		var a2 = document.createElement("a");
 		
-		$(a2).text("[edit]");
-		$(a2).attr("id", "edit_content_" + i)
-		$(a2).addClass("editContent")
-		$(a2).attr("href", "#");
+		//$(a2).text("[edit]");
+		//$(a2).attr("id", "edit_content_" + i)
+		//$(a2).addClass("editContent")
+		//$(a2).attr("href", "#");
 		//create an overlay on click
 		var content_edit = document.createElement("textarea");
 		//now we're gonna access this in the callback from JSONBlob PUT
 		//let me add the buttons first
 		$(content_edit).attr("id", "edit_content_input_" + i);
+		$(content_edit).val("Lorem ipsum hocus pocus stupendo!")
 		$(partial).append(content_edit);
 		$(content_edit).height("444px");
 		$(content_edit).width("555px");
 		$(content_edit).hide();
 		//we invented Legato Jasmine and me OH THAT'S WHAT THAT IS
 
-		$(a2).click(function(e){
+		/*$(a2).click(function(e){
 			e.preventDefault();
 			//these numbers are actually crucially important because all pRNG is time-Based
 			$(content_edit).fadeToggle(747);
 			$(content_button).fadeToggle(747);
-		})
+		})*/
 		var span = document.createElement("span")
 		$(div).append(span) //USSS slave
 		$(span).append(content.content);	
 		$(span).attr("id", "content_span_" + i);
 		$(content_edit).val($(span).html())
-		$(div).append(a2);
+		//$(div).append(a2);
 		var content_button = document.createElement("button");
 		$(content_button).addClass("edit_button");
 		$(content_button).attr("id", "edit_content_button_" + i);
 		$(partial).append("<br>")
-		$(partial).append(content_button);
-		$(partial).append("<br>")
-		$(content_button).text("Update");
+		
 		$(content_button).hide();
 
 		//this needs to go here because the page doesn't automatically load the event
@@ -528,9 +540,9 @@ function createPage(page){
 					console.log("here");
 					updateJSONBlob("subheading", id);
 					break;
-				case "edit_content_button_" + id:
+				/*case "edit_content_button_" + id:
 					updateJSONBlob("content", id);
-					break;
+					break;*/
 				default:
 					console.log("button error");
 					break;
@@ -540,11 +552,6 @@ function createPage(page){
 
 	//TODO: remove section
 
-	//add Chapter
-	var content_button = document.createElement("button");
-	$(content_button).text("Add Chapter");
-	$(partial).append("<br>")
-	$(partial).append(content_button);
 	$(partial).append("<br>")
 	var content_title = document.createElement("input")
 	var content_input = document.createElement("textarea")
@@ -564,16 +571,19 @@ function createPage(page){
 	$(content_input).height("444px");
 	$(content_button).click(function(e){
 		e.preventDefault();
+
 		$(content_title).fadeToggle(757);
 		$(content_input).fadeToggle(757);
-		$(content_index).fadeToggle(757);
+		$(content_index).fadeToggle(757);		
+ 		$("html, body").animate({ scrollTop: $("#content_index").position().top }, 1);
 		$(section_update_button).fadeToggle(757)
 	})
 
 	//see i don't say "Submit" because it's a matter of subversivity 
 	var section_update_button = document.createElement("button");
 	//this makes the frontend 'delightful'!
-	$(section_update_button).text("Update");
+	$(section_update_button).text("Publish");
+	$(partial).append("<br>")
 	$(partial).append(section_update_button);
 	$(section_update_button).hide();
 	$(section_update_button).click(function(e){
@@ -610,10 +620,22 @@ function createPage(page){
 		//TODO modular architecture
 		addReference($(referenceTextInput).val(), $(referenceHyperlinkInput).val());
 	})
-
+	//delete reference
+	var index_input = document.createElement("input");
+	$(partial).append(index_input);
+	$(index_input).attr("id", "delete_ref");
+	$(index_input).attr("placeholder", "index")
+	var del_button = document.createElement("button");
+	$(del_button).text("-");
+	$(partial).append(del_button)
+	$(del_button).click(function(){
+		if($("#index_input").val())
+			deleteReference(parseInt($("#index_input").val()));
+	})
 
 
 	manifestReference(page);
+
 	manifestHyperlink();
 }
 
@@ -665,13 +687,7 @@ function manifestReference(page){
 			$(a).attr("href", ref.hyperlink);
 			$(a).text(ref.hyperlink);
 			$(ol).attr("start", 0);
-			var button = document.createElement("button");
-			$(button).text("DELETE");
-			$(li).append(button);
-
-			$(button).click(function(){
-				deleteReference(i)
-			})
+			
 
 		    for (var j=0; j<page.contents.length; j++) {
 		    	//get char length of ref.text
