@@ -22,7 +22,9 @@ function _WIKI_load(doc){
 	parseJSON(doc, function(err, result){
 		console.log(result);
 		pages = result;
-
+		if(!pages[0]){
+			mintPage("Hello World");
+		}
 		//if(pages){
 			//_ANCHOR3D_route("#" + pages[0].hyperlink)
 
@@ -115,6 +117,7 @@ function updateJSONBlob(partition, id){
 
 }
 
+//someone else's stinky
 function linkify(inputText) {
     var replacedText, replacePattern1, replacePattern2, replacePattern3;
 
@@ -356,11 +359,16 @@ function createPage(page){
 	})
 
 	$(sidebar).append(imgEdit);
+	var content_button = document.createElement("button");
+	$(content_button).text("Mint Chapter");
+	$(sidebar).append("<br><br><br>")
+	$(sidebar).append(content_button);
+
 
 	$(sidebar).addClass("sidebar");
 
 
-
+	//main partial
 	var div = document.createElement("div");
 	var partial = $(main).append(div)
 	$(partial).addClass("partial");
@@ -403,27 +411,27 @@ function createPage(page){
 	var span = document.createElement("span");
 	$(span).text("Table of Chapters");
 	$(span).attr("id", "table_of_chapters");
+	$(span).css("font-size", "18px");
 	$(partial).append("<br><br>")
 	$(partial).append(span);
 	$(partial).append("<br>")
-	var content_button = document.createElement("button");
-	$(content_button).text("Mint Chapter");
-	$(partial).append(content_button);
 	var ol = document.createElement("ol");
 	$(partial).append(ol);
-	$(ol).attr('start', 0)
+	//$(ol).attr('start', 0)
+	//is someone using a shrink ray
+	$(ol).css("font-size" , "15px")
 	//add Chapter
 	$(partial).append("<br>")
 	//AM I NOT MERCIFUL
 	//foreach to create index
 	page.contents.forEach(function(content, i){
 		//add to ul this is the Table of Chapters
-
+		i++;
 		//--TABLE OF CHAPTERS, cont.--
 		var li = document.createElement("li");
 		$(ol).append(li);
 		var a = document.createElement("a");
-
+		$(li, a).css("font-size" , "15px")
 		$(li).append(a);
 		$(a).text(content.subheading);
 		$(a).attr("href" , "#");
@@ -528,8 +536,8 @@ function createPage(page){
 		//note this also applies edit_button event to the heading above
 		$(".edit_button").click(function(e){
 			e.preventDefault();
-			var id = $(this).attr("id").slice(-1);
-			//CAMP AVE
+			var id = parseInt($(this).attr("id").substr($(this).attr("id").lastIndexOf("_") + 1))
+
 			//yes the kakadaimon gave me a head wound and it is going to be miraculously healed
 			console.log(id);
 			switch($(this).attr("id")){
@@ -639,7 +647,7 @@ function createPage(page){
 	manifestHyperlink();
 }
 
-
+//eschatology^333
 function manifestHyperlink(){
 	$("hyperlink").each(function(){
 		console.log("hyper");
@@ -689,7 +697,7 @@ function manifestReference(page){
 			$(ol).attr("start", 0);
 			
 
-		    for (var j=0; j<page.contents.length; j++) {
+		    for (var j=1; j<=page.contents.length; j++) {
 		    	//get char length of ref.text
 		    	//j is the content index
 		    	console.log(ref);
