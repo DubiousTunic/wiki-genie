@@ -171,7 +171,10 @@ function mintPage(txt){
 
 	createPage(page)
 	
-	pages.push(page);
+	if(pages.length > 0)
+		pages.push(page);
+	else 
+		pages = [page];
 
 	lance();
 
